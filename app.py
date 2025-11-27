@@ -581,6 +581,8 @@ def main():
         with col2:
             # Seleccionar variables numéricas
             vars_numericas = df_original.select_dtypes(include=[np.number]).columns.tolist()
+            var_filtro = 'Ninguna'
+            rango = None
             if vars_numericas:
                 var_filtro = st.selectbox("Variable para filtrar", ['Ninguna'] + vars_numericas)
 
@@ -595,7 +597,7 @@ def main():
         # Aplicar filtros
         df_filtrado = df_completo[df_completo['Cluster'].isin(clusters_seleccionados)]
 
-        if var_filtro != 'Ninguna':
+        if var_filtro != 'Ninguna' and rango is not None:
             df_filtrado = df_filtrado[
                 (df_filtrado[var_filtro] >= rango[0]) &
                 (df_filtrado[var_filtro] <= rango[1])
@@ -666,28 +668,30 @@ def main():
         # Resumen del análisis
         st.subheader("Resumen del Análisis")
 
-        resumen = f"""
-        ### Reporte EDU INSIGHT
+        var_acum_final = resultados_pca['var_exp'].iloc[resultados_pca['n_components']-1]['Acumulado %']
+        kmo_texto = f"{pca_check['kmo']:.3f}" if pca_check['kmo'] else 'N/A'
+        
+        resumen = f"""### Reporte EDU INSIGHT
 
-        **Fecha:** {pd.Timestamp.now().strftime('%Y-%m-%d %H:%M')}
+**Fecha:** {pd.Timestamp.now().strftime('%Y-%m-%d %H:%M')}
 
-        #### Datos
-        - Total de registros: {len(df_original):,}
-        - Variables analizadas: {len(df_clean.columns)}
+#### Datos
+- Total de registros: {len(df_original):,}
+- Variables analizadas: {len(df_clean.columns)}
 
-        #### PCA
-        - Componentes retenidos: {resultados_pca['n_components']}
-        - Varianza explicada: {resultados_pca['var_exp'].iloc[resultados_pca['n_components']-1]['Acumulado %']:.2f}%
-        - KMO Score: {pca_check['kmo']:.3f if pca_check['kmo'] else 'N/A'}
+#### PCA
+- Componentes retenidos: {resultados_pca['n_components']}
+- Varianza explicada: {var_acum_final:.2f}%
+- KMO Score: {kmo_texto}
 
-        #### Clustering
-        - Número de clusters: {k_final}
-        - Silhouette Score: {resultados_cluster['metricas']['silhouette']:.3f}
-        - Davies-Bouldin Index: {resultados_cluster['metricas']['davies_bouldin']:.3f}
-        - Calinski-Harabasz Score: {resultados_cluster['metricas']['calinski_harabasz']:.0f}
+#### Clustering
+- Número de clusters: {k_final}
+- Silhouette Score: {resultados_cluster['metricas']['silhouette']:.3f}
+- Davies-Bouldin Index: {resultados_cluster['metricas']['davies_bouldin']:.3f}
+- Calinski-Harabasz Score: {resultados_cluster['metricas']['calinski_harabasz']:.0f}
 
-        #### Distribución de Clusters
-        """
+#### Distribución de Clusters
+"""
 
         for cluster in range(k_final):
             n_estudiantes = sum(resultados_cluster['labels'] == cluster)
