@@ -670,7 +670,7 @@ def main():
 
         var_acum_final = resultados_pca['var_exp'].iloc[resultados_pca['n_components']-1]['Acumulado %']
         kmo_texto = f"{pca_check['kmo']:.3f}" if pca_check['kmo'] else 'N/A'
-        
+
         resumen = f"""### Reporte EDU INSIGHT
 
 **Fecha:** {pd.Timestamp.now().strftime('%Y-%m-%d %H:%M')}
